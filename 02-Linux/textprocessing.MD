@@ -1,6 +1,20 @@
-# Linux Text Processing — grep, awk & sed
+# Linux Text Processing — awk, sed & grep
 
 A practical cheat sheet for the most important Linux text-processing commands used in DevOps, log analysis, troubleshooting, and shell scripting.
+
+---
+
+## Table of Contents
+
+- [Quick Comparison](#quick-comparison)
+- [awk](#awk)
+- [sed](#sed)
+- [grep](#grep)
+- [Combining awk, sed and grep](#combining-awk-sed-and-grep)
+- [Quick Cheat Sheet](#quick-cheat-sheet)
+- [Important Symbols](#important-symbols)
+- [Common Workflow](#common-workflow)
+- [Interview Quick Revision](#interview-quick-revision)
 
 ---
 
@@ -8,17 +22,583 @@ A practical cheat sheet for the most important Linux text-processing commands us
 
 | Command | Main Purpose |
 |---|---|
-| `grep` | Search and filter text |
 | `awk` | Extract, filter, calculate, and process columns |
 | `sed` | Search, replace, delete, and modify text |
+| `grep` | Search and filter text |
 
 ### Simple Mental Model
 
-\`\`\`text
-grep → Find
+```text
 awk  → Process
 sed  → Modify
-\`\`\`
+grep → Find
+```
+
+---
+
+# awk
+
+`awk` is mainly used to **process columns, filter data, perform calculations, and format output**.
+
+## Basic Syntax
+
+```bash
+awk 'pattern { action }' file
+```
+
+---
+
+## awk Fields
+
+Suppose `users.txt` contains:
+
+```
+John 25 Chennai
+Mike 30 Bangalore
+Sam 28 Mumbai
+```
+
+Fields:
+
+```
+$0  → Entire line
+$1  → First field
+$2  → Second field
+$3  → Third field
+$NF → Last field
+NF  → Number of fields
+NR  → Current line number
+```
+
+---
+
+## 1. Print First Column
+
+```bash
+awk '{print $1}' file
+```
+
+### Example
+
+`users.txt`:
+
+```
+John 25 Chennai
+Mike 30 Bangalore
+Sam 28 Mumbai
+```
+
+Output:
+
+```
+John
+Mike
+Sam
+```
+
+---
+
+## 2. Print Multiple Columns
+
+```bash
+awk '{print $1,$2}' file
+```
+
+Output:
+
+```
+John 25
+Mike 30
+Sam 28
+```
+
+---
+
+## 3. Print Last Column
+
+```bash
+awk '{print $NF}' file
+```
+
+`$NF` → Last field.
+
+Output (for `users.txt`):
+
+```
+Chennai
+Bangalore
+Mumbai
+```
+
+---
+
+## 4. Print Number of Fields
+
+```bash
+awk '{print NF}' file
+```
+
+Output:
+
+```
+3
+3
+3
+```
+
+---
+
+## 5. Print Line Number Along With the Line
+
+```bash
+awk '{print NR,$0}' file
+```
+
+`NR` → Current line number.
+
+Output:
+
+```
+1 John 25 Chennai
+2 Mike 30 Bangalore
+3 Sam 28 Mumbai
+```
+
+---
+
+## 6. Print a Specific Line
+
+```bash
+awk 'NR==5 {print}' file
+```
+
+Prints line 5.
+
+---
+
+## 7. Print a Range of Lines
+
+```bash
+awk 'NR>=5 && NR<=10 {print}' file
+```
+
+Prints lines 5 through 10.
+
+---
+
+## 8. Filter Using a Numeric Condition
+
+```bash
+awk '$2 > 50 {print}' file
+```
+
+Prints lines where column 2 is greater than 50.
+
+### Example
+
+`data.txt`:
+
+```
+app1 40
+app2 75
+app3 90
+```
+
+Output:
+
+```
+app2 75
+app3 90
+```
+
+---
+
+## 9. String Comparison
+
+```bash
+awk '$3 == "ERROR" {print}' file
+```
+
+Prints lines where the third column equals `ERROR`.
+
+### Example
+
+`app.log`:
+
+```
+2026-10-03 09:20:15 ERROR
+2026-10-03 09:25:10 INFO
+```
+
+Output:
+
+```
+2026-10-03 09:20:15 ERROR
+```
+
+---
+
+## 10. Search Using Regex
+
+```bash
+awk '/ERROR/ {print}' file
+```
+
+Prints lines containing `ERROR`.
+
+---
+
+## 11. Regex on a Specific Field
+
+```bash
+awk '$4 ~ /server/ {print}' file
+```
+
+`~` → Matches a regular expression.
+
+### Example
+
+`app.log`:
+
+```
+2026-10-03 09:20:15 app server-1
+2026-10-03 09:21:10 app db-1
+```
+
+Output:
+
+```
+2026-10-03 09:20:15 app server-1
+```
+
+---
+
+## 12. NOT Regex Match
+
+```bash
+awk '$4 !~ /server/ {print}' file
+```
+
+`!~` → Does not match regex.
+
+Output (for the file above):
+
+```
+2026-10-03 09:21:10 app db-1
+```
+
+---
+
+## 13. Sum a Column
+
+Suppose `sales.txt`:
+
+```
+John 100
+Mike 200
+Sam 300
+```
+
+Command:
+
+```bash
+awk '{sum += $2} END {print sum}' file
+```
+
+Output:
+
+```
+600
+```
+
+---
+
+## 14. Calculate Average
+
+```bash
+awk '{sum += $2} END {print sum/NR}' file
+```
+
+Output:
+
+```
+200
+```
+
+---
+
+## 15. Count Lines
+
+```bash
+awk 'END {print NR}' file
+```
+
+---
+
+## 16. Custom Field Separator (CSV)
+
+For a CSV file:
+
+```
+John,25,Chennai
+Mike,30,Bangalore
+```
+
+Use:
+
+```bash
+awk -F',' '{print $1,$2}' file.csv
+```
+
+Output:
+
+```
+John 25
+Mike 30
+```
+
+`-F` → Field separator.
+
+---
+
+## 17. Colon Separator
+
+Useful with `/etc/passwd`:
+
+```bash
+awk -F':' '{print $1}' /etc/passwd
+```
+
+Output:
+
+```
+root
+daemon
+bin
+```
+
+---
+
+# sed
+
+`sed` is mainly used to **search, replace, delete, print, and modify text**.
+
+## Basic Syntax
+
+```bash
+sed 'command' file
+```
+
+---
+
+## 1. Replace First Occurrence
+
+```bash
+sed 's/old/new/' file
+```
+
+`s` → Substitute.
+
+Replaces the first occurrence on each line.
+
+### Example
+
+Input:
+
+```
+error here and error there
+```
+
+Output:
+
+```
+new here and error there
+```
+
+---
+
+## 2. Replace All Occurrences
+
+```bash
+sed 's/old/new/g' file
+```
+
+`g` → Global replacement.
+
+### Important Pattern
+
+```bash
+sed 's/FIND/REPLACE/g' file
+```
+
+---
+
+## 3. Case-Insensitive Replacement
+
+```bash
+sed 's/old/new/gi' file
+```
+
+- `g` → Global
+- `i` → Ignore case
+
+---
+
+## 4. Print a Specific Line
+
+```bash
+sed -n '5p' file
+```
+
+- `-n` → Suppress automatic output
+- `p` → Print
+
+---
+
+## 5. Print a Range of Lines
+
+```bash
+sed -n '1,5p' file
+```
+
+Prints lines 1 through 5.
+
+---
+
+## 6. Print Lines Matching a Pattern
+
+```bash
+sed -n '/ERROR/p' file
+```
+
+Prints lines containing `ERROR`.
+
+---
+
+## 7. Delete a Specific Line
+
+```bash
+sed '5d' file
+```
+
+`d` → Delete.
+
+---
+
+## 8. Delete a Range
+
+```bash
+sed '2,5d' file
+```
+
+Deletes lines 2 through 5 from the output.
+
+---
+
+## 9. Delete Matching Lines
+
+```bash
+sed '/ERROR/d' file
+```
+
+Deletes lines containing `ERROR` from the output.
+
+---
+
+## 10. Delete First Line
+
+```bash
+sed '1d' file
+```
+
+---
+
+## 11. Delete Last Line
+
+```bash
+sed '$d' file
+```
+
+`$` → Last line.
+
+---
+
+## 12. Delete Blank Lines
+
+```bash
+sed '/^$/d' file
+```
+
+---
+
+## 13. Delete Comments
+
+```bash
+sed '/^#/d' file
+```
+
+Deletes lines starting with `#`.
+
+---
+
+## 14. Add Text at Beginning
+
+```bash
+sed 's/^/#/' file
+```
+
+`^` → Beginning of line.
+
+### Example
+
+Input:
+
+```
+server=1
+port=8080
+```
+
+Output:
+
+```
+#server=1
+#port=8080
+```
+
+---
+
+## 15. Add Text at End
+
+```bash
+sed 's/$/END/' file
+```
+
+`$` → End of line.
+
+Output (for the same input):
+
+```
+server=1END
+port=8080END
+```
+
+---
+
+## 16. Modify File Directly
+
+### Linux / GNU sed
+
+```bash
+sed -i 's/old/new/g' file
+```
+
+### macOS
+
+```bash
+sed -i '' 's/old/new/g' file
+```
+
+`-i` → Modify the actual file.
 
 ---
 
@@ -28,79 +608,95 @@ sed  → Modify
 
 ## Basic Syntax
 
-\`\`\`bash
+```bash
 grep [options] "pattern" file
-\`\`\`
+```
 
 ---
 
 ## 1. Basic Search
 
-\`\`\`bash
-grep "ERROR" app.log
-\`\`\`
+```bash
+grep "ERROR" file
+```
 
 Find lines containing `ERROR`.
 
 ### Example
 
-\`\`\`
+`app.log`:
+
+```
 2026-10-03 09:20:15 ERROR [db-service] Database connection failed
 2026-10-03 09:25:10 ERROR [api-service] Request failed
-\`\`\`
+2026-10-03 09:26:00 INFO  [api-service] Request completed
+```
+
+Output:
+
+```
+2026-10-03 09:20:15 ERROR [db-service] Database connection failed
+2026-10-03 09:25:10 ERROR [api-service] Request failed
+```
 
 ---
 
 ## 2. Case-Insensitive Search
 
-\`\`\`bash
-grep -i "error" app.log
-\`\`\`
+```bash
+grep -i "error" file
+```
 
 `-i` → Ignore case.
 
 Matches:
 
-\`\`\`
+```
 ERROR
 Error
 error
 eRrOr
-\`\`\`
+```
 
 ---
 
 ## 3. Show Line Numbers
 
-\`\`\`bash
-grep -n "ERROR" app.log
-\`\`\`
+```bash
+grep -n "ERROR" file
+```
 
 `-n` → Show line number.
 
 Example:
 
-\`\`\`
+```
 8:2026-10-03 09:20:15 ERROR [db-service] Database connection failed
-\`\`\`
+```
 
 ---
 
 ## 4. Count Matching Lines
 
-\`\`\`bash
-grep -c "ERROR" app.log
-\`\`\`
+```bash
+grep -c "ERROR" file
+```
 
 `-c` → Count matching lines.
+
+Output:
+
+```
+2
+```
 
 ---
 
 ## 5. Exclude Matching Lines
 
-\`\`\`bash
-grep -v "ERROR" app.log
-\`\`\`
+```bash
+grep -v "ERROR" file
+```
 
 `-v` → Invert the match.
 
@@ -110,9 +706,9 @@ Shows lines that do not contain `ERROR`.
 
 ## 6. Recursive Search
 
-\`\`\`bash
-grep -r "ERROR" /var/log/
-\`\`\`
+```bash
+grep -r "ERROR" directory
+```
 
 `-r` → Search recursively through directories.
 
@@ -120,22 +716,31 @@ grep -r "ERROR" /var/log/
 
 ## 7. Recursive Search + Line Numbers
 
-\`\`\`bash
-grep -rn "ERROR" /var/log/
-\`\`\`
+```bash
+grep -rn "ERROR" directory
+```
 
 - `-r` → Recursive
 - `-n` → Line number
 
 Very useful for troubleshooting.
 
+### Example
+
+Output:
+
+```
+var/log/app.log:8:2026-10-03 09:20:15 ERROR Database connection failed
+var/log/db.log:3:2026-10-03 09:22:00 ERROR Connection timeout
+```
+
 ---
 
 ## 8. Match Whole Word
 
-\`\`\`bash
-grep -w "ERROR" app.log
-\`\`\`
+```bash
+grep -w "ERROR" file
+```
 
 `-w` → Match the complete word.
 
@@ -143,9 +748,9 @@ grep -w "ERROR" app.log
 
 ## 9. Multiple Patterns
 
-\`\`\`bash
-grep -E "ERROR|WARN" app.log
-\`\`\`
+```bash
+grep -E "ERROR|WARN" file
+```
 
 Finds lines containing either `ERROR` or `WARN`.
 
@@ -157,25 +762,25 @@ Finds lines containing either `ERROR` or `WARN`.
 
 ### Lines After
 
-\`\`\`bash
-grep -A 2 "ERROR" app.log
-\`\`\`
+```bash
+grep -A 2 "ERROR" file
+```
 
 `-A 2` → Show 2 lines after the match.
 
 ### Lines Before
 
-\`\`\`bash
-grep -B 2 "ERROR" app.log
-\`\`\`
+```bash
+grep -B 2 "ERROR" file
+```
 
 `-B 2` → Show 2 lines before the match.
 
 ### Lines Before and After
 
-\`\`\`bash
-grep -C 2 "ERROR" app.log
-\`\`\`
+```bash
+grep -C 2 "ERROR" file
+```
 
 `-C 2` → Show 2 lines before and after.
 
@@ -183,608 +788,111 @@ grep -C 2 "ERROR" app.log
 
 ## 11. Show Only Matching Text
 
-\`\`\`bash
-grep -o "ERROR" app.log
-\`\`\`
+```bash
+grep -o "ERROR" file
+```
 
 `-o` → Print only the matched text.
 
----
+Output:
 
-## 12. Search Only Specific Files
-
-\`\`\`bash
-grep -rn --include="*.log" "ERROR" .
-\`\`\`
-
-Searches only `.log` files.
+```
+ERROR
+ERROR
+```
 
 ---
 
-## 13. Exclude a Directory
+## 12. Show Files Containing a Match
 
-\`\`\`bash
-grep -rn --exclude-dir=node_modules "ERROR" .
-\`\`\`
-
-Useful when searching source-code projects.
-
----
-
-## 14. Show Files Containing a Match
-
-\`\`\`bash
-grep -rl "ERROR" .
-\`\`\`
+```bash
+grep -rl "ERROR" directory
+```
 
 `-l` → Show filenames containing the match.
 
+Output:
+
+```
+app.log
+db.log
+```
+
 ---
 
-## 15. Show Files Without a Match
+## 13. Show Files Without a Match
 
-\`\`\`bash
-grep -rL "ERROR" .
-\`\`\`
+```bash
+grep -rL "ERROR" directory
+```
 
 `-L` → Show filenames that do not contain the match.
 
 ---
 
-## 16. Search Multiple Files
+## 14. Search Live Logs
 
-\`\`\`bash
-grep "ERROR" app.log server.log database.log
-\`\`\`
-
-Example output:
-
-\`\`\`
-app.log:ERROR Database connection failed
-server.log:ERROR Server crashed
-database.log:ERROR Connection failed
-\`\`\`
-
----
-
-## 17. Search Live Logs
-
-\`\`\`bash
+```bash
 tail -f app.log | grep "ERROR"
-\`\`\`
+```
 
 Continuously displays new log lines containing `ERROR`.
 
----
+### Example
 
-# awk
+Terminal output while the app keeps logging:
 
-`awk` is mainly used to **process columns, filter data, perform calculations, and format output**.
+```
+2026-10-03 09:20:15 ERROR [db-service] Database connection failed
+2026-10-03 09:31:02 ERROR [api-service] Request failed
+2026-10-03 09:33:48 ERROR [cache] Redis unavailable
+```
 
-## Basic Syntax
-
-\`\`\`bash
-awk 'pattern { action }' file
-\`\`\`
-
----
-
-## awk Fields
-
-Suppose `users.txt` contains:
-
-\`\`\`
-John 25 Chennai
-Mike 30 Bangalore
-Sam 28 Mumbai
-\`\`\`
-
-Fields:
-
-\`\`\`
-$0  → Entire line
-$1  → First field
-$2  → Second field
-$3  → Third field
-$NF → Last field
-NF  → Number of fields
-NR  → Current line number
-\`\`\`
+Each new `ERROR` line appears in real time as it is written to `app.log`.
 
 ---
 
-## 1. Print First Column
-
-\`\`\`bash
-awk '{print $1}' users.txt
-\`\`\`
-
----
-
-## 2. Print Multiple Columns
-
-\`\`\`bash
-awk '{print $1,$3}' users.txt
-\`\`\`
-
-Output:
-
-\`\`\`
-John Chennai
-Mike Bangalore
-Sam Mumbai
-\`\`\`
-
----
-
-## 3. Print Entire Line
-
-\`\`\`bash
-awk '{print $0}' users.txt
-\`\`\`
-
----
-
-## 4. Print Last Column
-
-\`\`\`bash
-awk '{print $NF}' users.txt
-\`\`\`
-
-`$NF` → Last field.
-
----
-
-## 5. Print Number of Fields
-
-\`\`\`bash
-awk '{print NF}' users.txt
-\`\`\`
-
-`NF` → Number of fields.
-
----
-
-## 6. Print Line Number
-
-\`\`\`bash
-awk '{print NR,$0}' users.txt
-\`\`\`
-
-`NR` → Current line number.
-
----
-
-## 7. Print Specific Line
-
-\`\`\`bash
-awk 'NR==5 {print}' file.txt
-\`\`\`
-
-Prints line 5.
-
----
-
-## 8. Print Range of Lines
-
-\`\`\`bash
-awk 'NR>=5 && NR<=10 {print}' file.txt
-\`\`\`
-
-Prints lines 5 through 10.
-
----
-
-## 9. Filter Using a Condition
-
-\`\`\`bash
-awk '$2 > 25 {print $1,$2}' users.txt
-\`\`\`
-
-Prints records where column 2 is greater than 25.
-
----
-
-## 10. String Comparison
-
-\`\`\`bash
-awk '$3 == "Chennai" {print $1}' users.txt
-\`\`\`
-
-Prints names where the third column is `Chennai`.
-
----
-
-## 11. Search Using Regex
-
-\`\`\`bash
-awk '/ERROR/ {print}' app.log
-\`\`\`
-
-Prints lines containing `ERROR`.
-
----
-
-## 12. Regex on a Specific Field
-
-\`\`\`bash
-awk '$4 ~ /server/ {print}' app.log
-\`\`\`
-
-`~` → Matches a regular expression.
-
----
-
-## 13. NOT Regex Match
-
-\`\`\`bash
-awk '$4 !~ /server/ {print}' app.log
-\`\`\`
-
-`!~` → Does not match regex.
-
----
-
-## 14. Sum a Column
-
-Suppose:
-
-\`\`\`
-John 100
-Mike 200
-Sam 300
-\`\`\`
-
-Command:
-
-\`\`\`bash
-awk '{sum += $2} END {print sum}' file.txt
-\`\`\`
-
-Output:
-
-\`\`\`
-600
-\`\`\`
-
----
-
-## 15. Calculate Average
-
-\`\`\`bash
-awk '{sum += $2} END {print sum/NR}' file.txt
-\`\`\`
-
----
-
-## 16. Count Lines
-
-\`\`\`bash
-awk 'END {print NR}' file.txt
-\`\`\`
-
----
-
-## 17. Count Matching Records
-
-\`\`\`bash
-awk '$3 == "ERROR" {count++} END {print count}' app.log
-\`\`\`
-
----
-
-## 18. BEGIN and END
-
-\`\`\`bash
-awk 'BEGIN {print "Starting"} {print $1} END {print "Finished"}' file.txt
-\`\`\`
-
-Execution order:
-
-\`\`\`
-BEGIN
-  ↓
-Read input
-  ↓
-Process each line
-  ↓
-END
-\`\`\`
-
-### Important
-
-\`\`\`
-BEGIN → Before input
-{ }   → Every input line
-END   → After all input
-\`\`\`
-
----
-
-## 19. Custom Field Separator
-
-For a CSV file:
-
-\`\`\`
-John,25,Chennai
-Mike,30,Bangalore
-\`\`\`
-
-Use:
-
-\`\`\`bash
-awk -F',' '{print $1,$3}' users.csv
-\`\`\`
-
-`-F` → Field separator.
-
----
-
-## 20. Colon Separator
-
-Useful with `/etc/passwd`:
-
-\`\`\`bash
-awk -F':' '{print $1}' /etc/passwd
-\`\`\`
-
----
-
-## 21. Pipe Separator
-
-\`\`\`bash
-awk -F'|' '{print $1}' file.txt
-\`\`\`
-
----
-
-# sed
-
-`sed` is mainly used to **search, replace, delete, print, and modify text**.
-
-## Basic Syntax
-
-\`\`\`bash
-sed 'command' file
-\`\`\`
-
----
-
-## 1. Replace First Occurrence
-
-\`\`\`bash
-sed 's/error/warning/' app.log
-\`\`\`
-
-`s` → Substitute.
-
-Replaces the first occurrence on each line.
-
----
-
-## 2. Replace All Occurrences
-
-\`\`\`bash
-sed 's/error/warning/g' app.log
-\`\`\`
-
-`g` → Global replacement.
-
-### Important Pattern
-
-\`\`\`bash
-sed 's/FIND/REPLACE/g' file
-\`\`\`
-
----
-
-## 3. Case-Insensitive Replacement
-
-\`\`\`bash
-sed 's/error/warning/gi' app.log
-\`\`\`
-
-- `g` → Global
-- `i` → Ignore case
-
----
-
-## 4. Replace Only on Matching Lines
-
-\`\`\`bash
-sed '/ERROR/s/failed/problem/' app.log
-\`\`\`
-
-Only lines containing `ERROR` are modified.
-
----
-
-## 5. Print a Specific Line
-
-\`\`\`bash
-sed -n '5p' file.txt
-\`\`\`
-
-- `-n` → Suppress automatic output
-- `p` → Print
-
----
-
-## 6. Print a Range of Lines
-
-\`\`\`bash
-sed -n '1,5p' file.txt
-\`\`\`
-
-Prints lines 1 through 5.
-
----
-
-## 7. Print Lines Matching a Pattern
-
-\`\`\`bash
-sed -n '/ERROR/p' app.log
-\`\`\`
-
-Prints lines containing `ERROR`.
-
----
-
-## 8. Delete a Specific Line
-
-\`\`\`bash
-sed '5d' file.txt
-\`\`\`
-
-`d` → Delete.
-
----
-
-## 9. Delete a Range
-
-\`\`\`bash
-sed '2,5d' file.txt
-\`\`\`
-
-Deletes lines 2 through 5 from the output.
-
----
-
-## 10. Delete Matching Lines
-
-\`\`\`bash
-sed '/ERROR/d' app.log
-\`\`\`
-
-Deletes lines containing `ERROR` from the output.
-
----
-
-## 11. Delete First Line
-
-\`\`\`bash
-sed '1d' file.txt
-\`\`\`
-
----
-
-## 12. Delete Last Line
-
-\`\`\`bash
-sed '$d' file.txt
-\`\`\`
-
-`$` → Last line.
-
----
-
-## 13. Delete Blank Lines
-
-\`\`\`bash
-sed '/^$/d' file.txt
-\`\`\`
-
----
-
-## 14. Delete Comments
-
-\`\`\`bash
-sed '/^#/d' config.txt
-\`\`\`
-
-Deletes lines starting with `#`.
-
----
-
-## 15. Add Text at Beginning
-
-\`\`\`bash
-sed 's/^/#/' file.txt
-\`\`\`
-
-`^` → Beginning of line.
-
----
-
-## 16. Add Text at End
-
-\`\`\`bash
-sed 's/$/END/' file.txt
-\`\`\`
-
-`$` → End of line.
-
----
-
-## 17. Modify File Directly
-
-### Linux / GNU sed
-
-\`\`\`bash
-sed -i 's/old/new/g' file.txt
-\`\`\`
-
-### macOS
-
-\`\`\`bash
-sed -i '' 's/old/new/g' file.txt
-\`\`\`
-
-`-i` → Modify the actual file.
-
----
-
-## 18. Multiple sed Commands
-
-\`\`\`bash
-sed -e 's/ERROR/WARN/g' -e '/DEBUG/d' app.log
-\`\`\`
-
-`-e` → Execute multiple sed expressions.
-
----
-
-# Combining grep, awk and sed
+# Combining awk, sed and grep
 
 ## grep → awk
 
-\`\`\`bash
-grep "ERROR" app.log | awk '{print $1,$2,$4}'
-\`\`\`
+```bash
+grep "ERROR" file | awk '{print $1,$2,$4}'
+```
 
 Process:
 
-\`\`\`
-app.log
+```text
+file
    ↓
 grep → Find ERROR
    ↓
 awk  → Extract columns
-\`\`\`
+```
 
 ---
 
 ## grep → sed
 
-\`\`\`bash
-grep "ERROR" app.log | sed 's/ERROR/PROBLEM/g'
-\`\`\`
+```bash
+grep "ERROR" file | sed 's/ERROR/PROBLEM/g'
+```
 
 ---
 
 ## grep → awk → sort
 
-\`\`\`bash
-grep "ERROR" app.log | awk '{print $4}' | sort
-\`\`\`
+```bash
+grep "ERROR" file | awk '{print $4}' | sort
+```
 
 ---
 
 ## tail → grep
 
-\`\`\`bash
+```bash
 tail -f app.log | grep "ERROR"
-\`\`\`
+```
 
 Useful for monitoring live application logs.
 
@@ -792,9 +900,9 @@ Useful for monitoring live application logs.
 
 ## ps → grep
 
-\`\`\`bash
+```bash
 ps aux | grep nginx
-\`\`\`
+```
 
 Find processes containing `nginx`.
 
@@ -802,9 +910,9 @@ Find processes containing `nginx`.
 
 ## docker → grep
 
-\`\`\`bash
+```bash
 docker ps | grep nginx
-\`\`\`
+```
 
 Find Docker containers containing `nginx`.
 
@@ -812,30 +920,9 @@ Find Docker containers containing `nginx`.
 
 # Quick Cheat Sheet
 
-## grep
-
-\`\`\`bash
-grep "ERROR" file
-grep -i "error" file
-grep -n "ERROR" file
-grep -c "ERROR" file
-grep -v "ERROR" file
-grep -r "ERROR" directory
-grep -rn "ERROR" directory
-grep -w "ERROR" file
-grep -E "ERROR|WARN" file
-grep -A 2 "ERROR" file
-grep -B 2 "ERROR" file
-grep -C 2 "ERROR" file
-grep -o "ERROR" file
-grep -rl "ERROR" directory
-grep -rL "ERROR" directory
-tail -f app.log | grep "ERROR"
-\`\`\`
-
 ## awk
 
-\`\`\`bash
+```bash
 awk '{print $1}' file
 awk '{print $1,$2}' file
 awk '{print $NF}' file
@@ -853,11 +940,11 @@ awk '{sum += $2} END {print sum/NR}' file
 awk 'END {print NR}' file
 awk -F',' '{print $1,$2}' file.csv
 awk -F':' '{print $1}' /etc/passwd
-\`\`\`
+```
 
 ## sed
 
-\`\`\`bash
+```bash
 sed 's/old/new/' file
 sed 's/old/new/g' file
 sed 's/old/new/gi' file
@@ -879,91 +966,32 @@ sed -i 's/old/new/g' file
 
 # macOS
 sed -i '' 's/old/new/g' file
-\`\`\`
-
----
-
-# Most Important for DevOps
+```
 
 ## grep
 
-\`\`\`bash
-grep -i "error" app.log
-grep -n "ERROR" app.log
-grep -rn "ERROR" /var/log/
-grep -E "ERROR|WARN" app.log
+```bash
+grep "ERROR" file
+grep -i "error" file
+grep -n "ERROR" file
+grep -c "ERROR" file
+grep -v "ERROR" file
+grep -r "ERROR" directory
+grep -rn "ERROR" directory
+grep -w "ERROR" file
+grep -E "ERROR|WARN" file
+grep -A 2 "ERROR" file
+grep -B 2 "ERROR" file
+grep -C 2 "ERROR" file
+grep -o "ERROR" file
+grep -rl "ERROR" directory
+grep -rL "ERROR" directory
 tail -f app.log | grep "ERROR"
-\`\`\`
-
-## awk
-
-\`\`\`bash
-awk '{print $1}' file
-awk '{print $NF}' file
-awk '{print NR,$0}' file
-awk '$2 > 50 {print}' file
-awk '{sum += $2} END {print sum}' file
-awk -F',' '{print $1,$2}' file.csv
-\`\`\`
-
-## sed
-
-\`\`\`bash
-sed 's/old/new/' file
-sed 's/old/new/g' file
-sed -n '1,5p' file
-sed '/ERROR/d' file
-sed -i 's/old/new/g' file
-\`\`\`
-
----
-
-# Mental Model
-
-\`\`\`text
-                 Linux Text Processing
-                         │
-          ┌──────────────┼──────────────┐
-          ↓              ↓              ↓
-        grep            awk            sed
-          │              │              │
-         Find          Process        Modify
-          │              │              │
-       Search          Columns        Replace
-       Filter          Conditions     Delete
-       Count           Calculate      Print
-       Regex           Sum/Average    Edit
-          │              │              │
-          └──────────────┼──────────────┘
-                         ↓
-                       Pipe |
-\`\`\`
-
-## One-Line Memory Trick
-
-\`\`\`text
-grep → FIND
-awk  → PROCESS
-sed  → MODIFY
-\`\`\`
+```
 
 ---
 
 # Important Symbols
-
-## grep / Regular Expressions
-
-| Symbol | Meaning |
-|---|---|
-| `^` | Beginning of line |
-| `$` | End of line |
-| `.` | Any single character |
-| `[]` | Character set |
-| `[^]` | NOT character set |
-| `|` | OR |
-| `*` | Zero or more |
-| `+` | One or more |
-| `?` | Zero or one |
 
 ## awk
 
@@ -993,83 +1021,75 @@ sed  → MODIFY
 | `^` | Beginning of line |
 | `$` | End of line |
 
+## grep / Regular Expressions
+
+| Symbol | Meaning |
+|---|---|
+| `^` | Beginning of line |
+| `$` | End of line |
+| `.` | Any single character |
+| `[]` | Character set |
+| `[^]` | NOT character set |
+| `\|` | OR |
+| `*` | Zero or more |
+| `+` | One or more |
+| `?` | Zero or one |
+
 ---
 
-# DevOps Examples
+# Common Workflow
 
-## Find Application Errors
+## Extract a Column With awk
 
-\`\`\`bash
-grep -i "error" app.log
-\`\`\`
-
-## Find Errors with Line Numbers
-
-\`\`\`bash
-grep -in "error" app.log
-\`\`\`
-
-## Search All Log Files
-
-\`\`\`bash
-grep -rn --include="*.log" "ERROR" /var/log/
-\`\`\`
-
-## Watch Errors in Real Time
-
-\`\`\`bash
-tail -f app.log | grep -i "error"
-\`\`\`
-
-## Find Failed Requests
-
-\`\`\`bash
-grep "status=500" app.log
-\`\`\`
-
-## Extract a Specific Column
-
-\`\`\`bash
-awk '{print $4}' app.log
-\`\`\`
+```bash
+awk '{print $4}' file
+```
 
 ## Find Records Matching a Condition
 
-\`\`\`bash
-awk '$2 > 500 {print}' data.txt
-\`\`\`
+```bash
+awk '$2 > 500 {print}' file
+```
 
 ## Calculate a Total
 
-\`\`\`bash
-awk '{sum += $2} END {print sum}' data.txt
-\`\`\`
+```bash
+awk '{sum += $2} END {print sum}' file
+```
 
-## Replace Text
+## Replace Text With sed
 
-\`\`\`bash
-sed 's/localhost/production-server/g' config.txt
-\`\`\`
+```bash
+sed 's/localhost/production-server/g' file
+```
 
 ## Remove Comments
 
-\`\`\`bash
-sed '/^#/d' config.txt
-\`\`\`
+```bash
+sed '/^#/d' file
+```
 
 ## Remove Blank Lines
 
-\`\`\`bash
-sed '/^$/d' config.txt
-\`\`\`
+```bash
+sed '/^$/d' file
+```
+
+## Find Errors in Logs
+
+```bash
+grep -i "error" file
+```
+
+## Watch Errors in Real Time
+
+```bash
+tail -f app.log | grep -i "error"
+```
 
 ---
 
 # Interview Quick Revision
-
-## What is grep?
-
-`grep` is used to **search and filter text based on patterns**.
 
 ## What is awk?
 
@@ -1079,90 +1099,89 @@ sed '/^$/d' config.txt
 
 `sed` is a **stream editor** used to search, replace, delete, and transform text.
 
-## Difference Between grep, awk and sed
+## What is grep?
 
-\`\`\`text
-grep → Find / Filter
+`grep` is used to **search and filter text based on patterns**.
+
+## Difference Between awk, sed and grep
+
+```text
 awk  → Process / Calculate / Extract
 sed  → Modify / Replace / Delete
-\`\`\`
+grep → Find / Filter
+```
 
 ## What does `$1` mean in awk?
 
-\`\`\`text
+```text
 $1 → First field
 $2 → Second field
 $NF → Last field
 $0 → Entire line
-\`\`\`
+```
 
 ## What does `NR` mean?
 
-\`\`\`text
+```text
 NR → Current record/line number
-\`\`\`
+```
 
 ## What does `NF` mean?
 
-\`\`\`text
+```text
 NF → Number of fields
-\`\`\`
+```
 
 ## What does `END` mean in awk?
 
-\`\`\`text
+```text
 END → Execute after all input has been processed
-\`\`\`
+```
 
 ## What does `s` mean in sed?
 
-\`\`\`text
+```text
 s → Substitute
-\`\`\`
+```
 
 ## What does `g` mean in sed?
 
-\`\`\`text
+```text
 g → Global replacement
-\`\`\`
+```
 
 ## What does `-i` mean in sed?
 
-\`\`\`text
+```text
 -i → Modify the actual file
-\`\`\`
+```
 
 ## What does `-r` mean in grep?
 
-\`\`\`text
+```text
 -r → Recursive search
-\`\`\`
+```
 
 ## What does `-i` mean in grep?
 
-\`\`\`text
+```text
 -i → Ignore case
-\`\`\`
+```
 
 ## What does `-n` mean in grep?
 
-\`\`\`text
+```text
 -n → Show line numbers
-\`\`\`
+```
 
 ---
 
 # Final Cheat Sheet
 
-\`\`\`text
-grep → FIND
+```text
 awk  → PROCESS
 sed  → MODIFY
-
-grep -i "error" file
-grep -n "error" file
-grep -rn "error" directory
-grep -E "error|warn" file
+grep → FIND
 
 awk '{print $1}' file
 awk '{print $NF}' file
@@ -1176,8 +1195,13 @@ sed -n '1,5p' file
 sed '/ERROR/d' file
 sed -i 's/old/new/g' file
 
+grep -i "error" file
+grep -n "error" file
+grep -rn "error" directory
+grep -E "error|warn" file
+
 command1 | command2
-\`\`\`
+```
 
 ---
 
@@ -1185,9 +1209,9 @@ command1 | command2
 
 Master these concepts first:
 
-1. `grep`
-2. `awk`
-3. `sed`
+1. `awk`
+2. `sed`
+3. `grep`
 4. Pipes `|`
 5. Redirection `>`, `>>`
 6. Regular expressions
