@@ -1,0 +1,640 @@
+# ============================================================================
+# YAML EXAMPLES — companion to rules.md
+# ============================================================================
+# This file is a VALID YAML stream (multiple documents separated by ---).
+# Each document demonstrates one group of rules from rules.md.
+# Validate with:  ruby -ryaml -e 'YAML.parse_stream(File.read(ARGV[0]))' examples.yml
+# ============================================================================
+
+
+# ============================================================================
+# 1. SCALARS — NULL, BOOLEANS, INTEGERS, FLOATS, STRINGS
+# ============================================================================
+---
+nulls:
+  tilde: ~
+  null_lower: null
+  null_capitalized: Null
+  null_upper: NULL
+  empty_value:            # an empty value is null
+  empty_string: ""        # an empty string is NOT null
+
+booleans_yaml_1_2:
+  lower_true: true
+  capital_true: True
+  upper_true: TRUE
+  lower_false: false
+  capital_false: False
+  upper_false: FALSE
+
+strings_that_look_like_booleans:   # quote BOTH key and value (YAML 1.1 gotcha)
+  "yes": "yes"
+  "no": "no"
+  "on": "on"
+  "off": "off"
+  "norway": "NO"
+  "y": "y"
+  "n": "n"
+  # Unquoted, yes/no/on/off keys become booleans and collide: yes and on
+  # both resolve to true, so one silently overwrites the other.
+
+integers:
+  decimal: 42
+  negative: -17
+  positive_sign: +5
+  zero: 0
+  hexadecimal: 0xFF          # 255
+  octal_yaml_1_2: 0o755      # 493 in YAML 1.2; a plain string in YAML 1.1 parsers
+  binary_yaml_1_1: 0b1010    # 10 (YAML 1.1; not core 1.2)
+  underscored: 1_000_000     # accepted by many parsers
+
+floats:
+  decimal: 3.14
+  negative: -0.5
+  exponent: 1.2e3
+  negative_exponent: -4E-5
+  infinity: .inf
+  negative_infinity: -.inf
+  not_a_number: .nan
+
+strings:
+  plain: hello world
+  plain_with_dash: hello-world
+  single_quoted: 'It''s a YAML file'       # -> It's a YAML file
+  double_quoted: "Line 1\nLine 2\tTabbed"
+  unicode: "caf\u00E9"                     # -> café
+  escaped_backslash: "C:\\Users\\devops"
+  number_like: "007"
+  version_like: "1.10"                     # NOT the float 1.1
+  date_like: "2024-01-15"                  # stays a string
+  empty_string: ""
+
+
+# ============================================================================
+# 2. QUOTING RULES AND RESERVED INDICATOR CHARACTERS
+# ============================================================================
+---
+quoting_rules:
+  plain_key: plain value
+
+  # Keys that need quoting
+  "key with spaces": value
+  "key: with: colons": value
+  "123": a numeric-looking key
+  "yes": a boolean-looking key
+  "": an empty key
+
+  # '#' is a comment only at line start or after whitespace
+  comment_character: "value # this is data, not a comment"
+  hash_without_space: value#this-is-data
+  url_with_fragment: http://example.com/page#section
+
+  # ':' needs quoting only when followed by a space
+  colon_in_url: http://example.com:8080/path
+  colon_space_needs_quotes: "command: run this"
+
+  # Values starting with reserved indicators MUST be quoted
+  leading_dash: "- not a sequence"
+  leading_question: "? not a key"
+  leading_colon: ": not a mapping"
+  leading_comma: ", not a flow item"
+  leading_brackets: "[not a sequence]"
+  leading_braces: "{not a mapping}"
+  leading_hash: "# not a comment"
+  leading_ampersand: "& not an anchor"
+  leading_star: "* not an alias"
+  leading_exclamation: "! not a tag"
+  leading_pipe: "| not a block scalar"
+  leading_greater: "> not folded"
+  leading_percent: "% not a directive"
+  leading_at: "@ is reserved at the start"
+  leading_backtick: "` is reserved at the start"
+
+  # Quotes inside quotes
+  embedded_double_quote: 'She said "hello"'
+  embedded_single_quote: "It's fine"
+  single_quote_escape: 'It''s escaped by doubling'
+
+  # Escape sequences in double quotes
+  escaped_unicode: "\u2713 check"
+  control_characters: "tab:\there newline:\nhere"
+
+
+# ============================================================================
+# 3. BLOCK SCALARS — LITERAL, FOLDED, CHOMPING, INDENTATION INDICATOR
+# ============================================================================
+---
+literal_pipe: |
+  #!/bin/bash
+  echo "Hello"
+    echo "This line keeps its extra indentation"
+  exit 0
+
+folded_greater: >
+  This is one long sentence
+  folded across three lines.
+  Blank lines below become a newline.
+
+  This is a new paragraph.
+
+literal_strip: |-
+  No trailing newline is kept.
+
+literal_clip: |
+  Exactly one trailing newline is kept.
+
+literal_keep: |+
+  All trailing newlines are kept.
+
+
+folded_strip: >-
+  Folded text with
+  no trailing newline.
+
+folded_keep: >+
+  Folded with
+  trailing newlines kept.
+
+
+# Explicit indentation indicator: content indentation = 2 relative to the key
+indentation_indicator_literal: |2
+    Two spaces at the start of this line are content.
+
+indentation_indicator_folded: >2
+    Folded and explicitly indented.
+
+# In folded style, more-indented lines are NOT folded
+more_indented_in_folded: >
+  Normal folded line.
+    This more-indented line is literal.
+  Back to folded text.
+
+# Tabs are illegal for indentation but LEGAL inside content
+code_block_with_tabs_inside: |
+  function hello() {
+  	echo "tabs are legal inside content"
+  }
+
+
+# ============================================================================
+# 4. SEQUENCES
+# ============================================================================
+---
+simple_sequence:
+  - apple
+  - banana
+  - cherry
+
+flow_sequence: [apple, banana, cherry, 42, true, null, "quoted"]
+
+nested_sequence:
+  - - 1
+    - 2
+  - - 3
+    - 4
+
+sequence_of_mappings:
+  - name: Alice
+    role: admin
+    active: true
+  - name: Bob
+    role: developer
+    active: false
+
+mixed_sequence:
+  - 1
+  - 3.14
+  - true
+  - "text"
+  - null
+  - {key: value}
+  - [1, 2, 3]
+
+empty_sequence: []
+
+# Legal alternative: dashes at the parent's indentation level
+sequence_at_parent_indent:
+- one
+- two
+- three
+
+single_item:
+  - only
+
+
+# ============================================================================
+# 5. MAPPINGS AND NESTING
+# ============================================================================
+---
+application:
+  name: demo-app
+  version: "1.0.0"
+  metadata:
+    owner: platform-team
+    environment: production
+    contact:
+      email: platform@example.com
+      chat: "#platform"
+  servers:
+    - host: web-01
+      ip: 10.0.0.11
+      ports:
+        - 80
+        - 443
+      tags: [frontend, public]
+    - host: web-02
+      ip: 10.0.0.12
+      ports: [80, 443]
+      tags: [frontend, public]
+  limits:
+    cpu: "500m"
+    memory: "256Mi"
+  empty_mapping: {}
+  empty_value: null
+
+
+# ============================================================================
+# 6. FLOW STYLE (JSON-LIKE)
+# ============================================================================
+---
+flow_style:
+  map: {name: Alice, age: 30, active: true}
+  sequence: [1, 2, 3, four, "5"]
+  nested: {users: [{name: a}, {name: b}], count: 2}
+  multiline_flow: {
+    name: Alice,
+    age: 30,
+    tags: [admin, dev]
+  }
+  quoted_keys: {"key one": 1, "key: two": 2}
+  empty_map: {}
+  empty_sequence: []
+  flow_items_in_block:
+    - {name: web, port: 80}
+    - {name: db, port: 5432}
+
+
+# ============================================================================
+# 7. ANCHORS, ALIASES, AND MERGE KEYS
+# ============================================================================
+---
+database_defaults: &db_defaults
+  adapter: postgres
+  host: localhost
+  port: 5432
+  pool: 5
+
+development:
+  <<: *db_defaults
+  database: dev_db
+
+test:
+  <<: *db_defaults
+  host: test-db
+  database: test_db
+
+staging:
+  <<: *db_defaults
+  database: staging_db
+
+production:
+  <<: *db_defaults
+  host: prod-db.internal
+  database: prod_db
+  pool: 20
+
+# Scalar anchor
+default_timeout: &default_timeout 30
+service_a:
+  timeout: *default_timeout
+service_b:
+  timeout: *default_timeout
+
+# Sequence anchor
+public_ports: &public_ports [80, 443]
+web:
+  ports: *public_ports
+admin:
+  ports: *public_ports
+
+# Alias reuses the entire mapping node
+team_lead: &team_lead
+  name: Alice
+  role: admin
+
+team:
+  - *team_lead
+  - name: Bob
+    role: developer
+  - *team_lead
+
+# Merge precedence: explicit keys win; earlier merge sources win
+base_a: &base_a
+  a: 1
+  b: 2
+
+base_b: &base_b
+  b: 20
+  c: 30
+
+merged:
+  <<: [*base_a, *base_b]    # result: a=1, b=2, c=30, d=40
+  d: 40
+
+# Explicit key always overrides the merged value
+merged_with_override:
+  <<: *base_a
+  b: 200
+
+
+# ============================================================================
+# 8. TAGS — EXPLICIT TYPING AND CUSTOM TAGS
+# ============================================================================
+---
+explicit_typing:
+  string_number: !!str 123          # "123" (string)
+  integer_from_string: !!int "42"   # 42 (integer)
+  float_from_string: !!float "3.14" # 3.14 (float)
+  boolean_from_string: !!bool "true" # true (boolean)
+  null_from_empty_string: !!null "" # null
+  string_from_boolean: !!str true   # "true" (string)
+  string_from_float: !!str 3.14     # "3.14" (string)
+
+# Base64-encoded binary content ("Hello, YAML!")
+binary_data: !!binary |
+  SGVsbG8sIFlBTUwh
+
+# Application-specific local tag
+custom_tag: !myapp/config
+  retries: 3
+  timeout: 10
+
+# Non-specific tag (!) resolves to a string per spec; parser support varies
+non_specific_tag: ! hello
+
+
+# ============================================================================
+# 9. ADVANCED TYPES — SET, ORDERED MAP, PAIRS
+# ============================================================================
+---
+environments: !!set
+  ? development
+  ? staging
+  ? production
+
+deployment_steps: !!omap
+  - build: compile the application
+  - test: run the test suite
+  - deploy: release to production
+
+headers: !!pairs
+  - Accept: text/html
+  - Accept: application/json
+
+
+# ============================================================================
+# 10. COMPLEX / EXPLICIT KEYS
+# ============================================================================
+---
+port_bindings:
+  ? [host, port]
+  : "a host:port pair"
+
+# A long multi-line key
+? |
+  a very long
+  key
+: its value
+
+
+# ============================================================================
+# 11. TIMESTAMPS
+# ============================================================================
+---
+dates:
+  date_only: 2024-01-15
+  datetime_utc: 2024-01-15T10:30:00Z
+  datetime_offset: 2024-01-15T10:30:00+05:30
+  quoted_as_string: "2024-01-15"
+  explicit_timestamp: !!timestamp 2024-01-15
+
+
+# ============================================================================
+# 12. KUBERNETES — MULTI-DOCUMENT STREAM
+# ============================================================================
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: demo
+data:
+  LOG_LEVEL: info
+  APP_MODE: production
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: demo
+  labels:
+    app: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27
+          ports:
+            - containerPort: 80
+          env:
+            - name: LOG_LEVEL
+              value: "info"
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: demo
+spec:
+  selector:
+    app: web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
+
+# ============================================================================
+# 13. DOCKER COMPOSE
+# ============================================================================
+---
+services:
+  web:
+    image: nginx:1.27
+    ports:
+      - "8080:80"              # quote ports: bare 8080:80 is sexagesimal in YAML 1.1
+    environment:
+      - APP_ENV=production
+    depends_on:
+      - db
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: change_me
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
+
+
+# ============================================================================
+# 14. GITHUB ACTIONS
+# ============================================================================
+---
+name: CI
+
+on:                            # 'on' is a string key in YAML 1.2 (GitHub's parser)
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"   # quoted: 20 would be an integer
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm test
+
+
+# ============================================================================
+# 15. ANSIBLE PLAYBOOK
+# ============================================================================
+---
+- name: Configure web servers
+  hosts: webservers
+  become: true
+
+  vars:
+    http_port: 80
+    app_user: deploy
+    nginx_mode: "0644"        # quoted to avoid legacy-octal interpretation
+
+  tasks:
+    - name: Install nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: true
+
+    - name: Deploy nginx configuration
+      ansible.builtin.template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        mode: "{{ nginx_mode }}"
+      notify: Restart nginx
+
+    - name: Open firewall
+      ansible.builtin.command: "ufw allow {{ http_port }}:tcp"
+      when: ansible_os_family == "Debian"
+
+  handlers:
+    - name: Restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+
+
+# ============================================================================
+# 16. HELM values.yaml
+# ============================================================================
+---
+replicaCount: 2
+
+image:
+  repository: nginx
+  tag: "1.27"                 # quote image tags that look numeric
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  limits:
+    cpu: "500m"
+    memory: "256Mi"
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+
+# ============================================================================
+# 17. COMMON MISTAKES — shown only as comments (invalid YAML cannot be parsed)
+# ============================================================================
+---
+common_mistakes_reference:
+  note: "See rules.md section 21 for the full table."
+
+  # BAD:  key:value            missing space after colon
+  # GOOD: key: value
+
+  # BAD:  -item                missing space after dash
+  # GOOD: - item
+
+  # BAD:  country: NO          YAML 1.1 -> boolean false
+  # GOOD: country: "NO"
+
+  # BAD:  version: 1.10        -> float 1.1
+  # GOOD: version: "1.10"
+
+  # BAD:  color: #fff          '#' starts a comment -> null
+  # GOOD: color: "#fff"
+
+  # BAD:  cmd: echo a: b       colon+space splits into a nested mapping
+  # GOOD: cmd: "echo a: b"
+
+  # BAD:  two identical keys   invalid per spec
+  # GOOD: unique keys only
+
+  # BAD:  tabs for indentation illegal in YAML
+  # GOOD: 2 spaces per level
