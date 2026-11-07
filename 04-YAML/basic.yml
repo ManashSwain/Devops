@@ -49,4 +49,52 @@ alternative: ~
 
 # Timestamps in yaml
 
-morning_brew: 2026-01-19
+morning_brew: 2026-01-15
+time: 2015-01-15 08:30:44
+
+
+# colections in yaml (arrays)
+
+spices:
+  - ginger
+  - cloves
+  - black_pepper
+  - true
+  - 200
+
+evening_spices: [ginger, cloves, black_pepper]
+steeping_times: [3, 2, 1]
+
+# Nested Lists in yaml
+
+chai_categories:
+  - name: Traditional
+    varieties:
+      - cadamom_tea
+      - Ginger_tea
+  - name : Modern
+    varieties:
+      - Almond_tea
+      - Chocolate_tea
+      
+# Yaml Objects
+
+masala_chai:
+  ingredients:
+    tea: black_tea
+    liquid:
+      water: 200
+      milk: 350
+
+# Yaml combination of arrays and objects
+
+chai_menu:
+  - name: Masala_tea  # Array Item 1
+    price: 40
+    size: small
+  - name: coffee  # Array Item 2
+    price: 60
+    size: small
+
+
+
