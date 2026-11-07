@@ -97,4 +97,15 @@ chai_menu:
     size: small
 
 
+# yaml reusing
+
+default_chai_base: &default_base  # create anchor
+  tea: black_tea
+  milk: 400
+  is_hot: yes
+
+customised_tea:
+  <<: *default_base # use anchoring
+  add_ginger: yes
+  
 
