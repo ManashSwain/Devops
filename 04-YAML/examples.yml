@@ -345,11 +345,13 @@ merged:
 merged_with_override:
   <<: *base_a
   b: 200
+...
 
 
 # ============================================================================
-# 8. TAGS — EXPLICIT TYPING AND CUSTOM TAGS
+# 8. TAGS — EXPLICIT TYPING, TAG HANDLES, AND CUSTOM TAGS
 # ============================================================================
+%TAG !myapp! tag:yaml.org,2002:
 ---
 explicit_typing:
   string_number: !!str 123          # "123" (string)
@@ -364,10 +366,16 @@ explicit_typing:
 binary_data: !!binary |
   SGVsbG8sIFlBTUwh
 
-# Application-specific local tag
-custom_tag: !myapp/config
-  retries: 3
-  timeout: 10
+# %TAG maps a handle to a tag prefix, so !myapp!str resolves to the
+# standard !!str tag (tag:yaml.org,2002:str).
+handle_shorthand: !myapp!str 123
+
+# Application-specific tags (e.g. !myapp/config) are valid YAML, but generic
+# editors and schemas report them as unresolved unless explicitly configured.
+# Commented out here to keep the file warning-free in schemaless editors:
+# app_config: !myapp/config
+#   retries: 3
+#   timeout: 10
 
 # Non-specific tag (!) resolves to a string per spec; parser support varies
 non_specific_tag: ! hello

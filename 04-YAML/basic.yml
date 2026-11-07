@@ -1,0 +1,52 @@
+chai_type: masala_chai
+temperature: hot
+servings: 3
+brewing_time: 10
+
+chai_recepie:
+  base: black_tea
+  milk: whole_milk
+
+# Data types in yaml
+# Strings
+
+chai_type_two: Masala Chai
+description: "Chai with elachai and ginger"
+tagline: 'The Best chai in the world!'
+
+#Multi line strings
+
+brewing_instructions: |
+  Boil Water
+  Add Tea Leaves
+  Add milk
+
+brewing_instructions_two: >
+  Boil Water
+  Add Tea Leaves
+  Add milk
+
+# Numbers Data types in yaml
+
+cups_per_day: 2
+cups_per_day_two: 3.5
+scientific_notation: 4.5e+2
+hexadecimal_format: 0xFF22FF
+
+# Booleans datatypes in yaml
+
+is_hot: true
+add_sugar: yes
+add_salt: no
+add_masalas: false
+instant: off
+is_great: on
+
+# Null datatype in yaml
+
+sweetner: null
+alternative: ~
+
+# Timestamps in yaml
+
+morning_brew: 2026-01-19
