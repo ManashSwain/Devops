@@ -1,0 +1,100 @@
+chai_type: masala_chai
+temperature: hot
+servings: 3
+brewing_time: 10
+
+chai_recepie:
+  base: black_tea
+  milk: whole_milk
+
+# Data types in yaml
+# Strings
+
+chai_type_two: Masala Chai
+description: "Chai with elachai and ginger"
+tagline: 'The Best chai in the world!'
+
+#Multi line strings
+
+brewing_instructions: |
+  Boil Water
+  Add Tea Leaves
+  Add milk
+
+brewing_instructions_two: >
+  Boil Water
+  Add Tea Leaves
+  Add milk
+
+# Numbers Data types in yaml
+
+cups_per_day: 2
+cups_per_day_two: 3.5
+scientific_notation: 4.5e+2
+hexadecimal_format: 0xFF22FF
+
+# Booleans datatypes in yaml
+
+is_hot: true
+add_sugar: yes
+add_salt: no
+add_masalas: false
+instant: off
+is_great: on
+
+# Null datatype in yaml
+
+sweetner: null
+alternative: ~
+
+# Timestamps in yaml
+
+morning_brew: 2026-01-15
+time: 2015-01-15 08:30:44
+
+
+# colections in yaml (arrays)
+
+spices:
+  - ginger
+  - cloves
+  - black_pepper
+  - true
+  - 200
+
+evening_spices: [ginger, cloves, black_pepper]
+steeping_times: [3, 2, 1]
+
+# Nested Lists in yaml
+
+chai_categories:
+  - name: Traditional
+    varieties:
+      - cadamom_tea
+      - Ginger_tea
+  - name : Modern
+    varieties:
+      - Almond_tea
+      - Chocolate_tea
+      
+# Yaml Objects
+
+masala_chai:
+  ingredients:
+    tea: black_tea
+    liquid:
+      water: 200
+      milk: 350
+
+# Yaml combination of arrays and objects
+
+chai_menu:
+  - name: Masala_tea  # Array Item 1
+    price: 40
+    size: small
+  - name: coffee  # Array Item 2
+    price: 60
+    size: small
+
+
+
