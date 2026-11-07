@@ -107,5 +107,18 @@ default_chai_base: &default_base  # create anchor
 customised_tea:
   <<: *default_base # use anchoring
   add_ginger: yes
-  
 
+# yaml explicit data types
+
+zip_code: !!str 123
+count: !!int "111"
+  
+unique_items: !!set
+  ? cadamom
+  ? ginger
+  ? bay_leaves
+
+beverages: !!set
+  chai:
+  coffee:
+  ice_cream:
